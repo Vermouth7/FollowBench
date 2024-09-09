@@ -1,13 +1,12 @@
-import json
+import ast
 import csv
+import json
 import os
 import re
-import ast
-import matplotlib.pyplot as plt
 import string
 
+import matplotlib.pyplot as plt
 from utils import data_match_api_output
-
 
 
 def rule_evaluation(data_path, api_output_path, constraint_type, model_name):
@@ -298,7 +297,10 @@ def evaluate_example_constraint(data_path, api_output_path, model_name):
     for i in range(len(data)):
         for j in range(len(output)):
             if data[i]['instruction'] == output[j]['prompt_new']:
-                data[i]['generation'] = output[j]['choices'][0]['message']['content']
+                if 'result' in output[j]:
+                    data[i]['generation'] = output[j]['result']
+                else:
+                    data[i]['generation'] = output[j]['choices'][0]['message']['content']
                 break
             if j == len(output)-1 and data[i]['instruction'] != output[j]['prompt_new']:
                 print(i)
@@ -437,9 +439,13 @@ def csl_example_constraint(data_path, api_output_path, model_name):
     for i in range(len(data)):
         for j in range(len(output)):
             if data[i]['instruction'] == output[j]['prompt_new']:
-                data[i]['generation'] = output[j]['choices'][0]['message']['content']
+                if 'result' in output[j]:
+                    data[i]['generation'] = output[j]['result']
+                else:
+                    data[i]['generation'] = output[j]['choices'][0]['message']['content']
                 break
             if j == len(output)-1 and data[i]['instruction'] != output[j]['prompt_new']:
+                
                 print(i)
     
     # check correct

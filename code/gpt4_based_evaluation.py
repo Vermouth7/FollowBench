@@ -1,17 +1,18 @@
-import json
 import csv
+import json
+import logging
 import os
-import re
 import random
+import re
+
 import matplotlib.pyplot as plt
-import logging  
+
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
+from rule_based_evaluation import (check_match, csl_five_constraint,
+                                   rule_evaluation)
 from utils import data_match_api_output
-from rule_based_evaluation import rule_evaluation, csl_five_constraint, check_match
-
-
 
 ############################################################################################################################################## evaluation prompt for content constraints
 
@@ -279,16 +280,17 @@ def discriminative_evaluation(data_gpt4_discriminative_eval_input_path, gpt4_dis
     # match
     for i in range(len(data)):
         for j in range(len(output)):
+            
             if data[i]['prompt_new'] == output[j]['prompt_new']:
                 data[i]['hard_satisfy'] = paring_discriminative_generation(output[j]['choices'][0]['message']['content'], data[i]['level'])[0]
                 data[i]['soft_satisfy'] = paring_discriminative_generation(output[j]['choices'][0]['message']['content'], data[i]['level'])[1]
                 break
             if j == len(output)-1 and data[i]['prompt_new'] != output[j]['prompt_new']:
+                # print(data[i]['prompt_new'],output[j]['prompt_new'])
                 print(i)
 
     results = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
     n_group = len(data) // 5
-
     for i in range(len(data)):
         if data[i]['level'] == 1:
             results[0][0] += data[i]['hard_satisfy']

@@ -1,23 +1,27 @@
 import argparse
 import json
+import logging
 import os
+
 from tqdm import tqdm
-import logging  
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from gpt4_based_evaluation import acquire_discriminative_eval_input
 from openai import OpenAI
 
+API_BASE = "https://api.nextapi.fun"
+API_KEY = "ak-Lfu504S5OrzjNvivYYdY6E8xvn1hiTY42texx7WvTIojB9MC"
 MAX_API_RETRY = 5
 
 def get_eval(user_prompt: str, max_tokens: int, api_key: str):
     logging.basicConfig(level=logging.INFO)
     for i in range(MAX_API_RETRY):
         try:
-            client = OpenAI(api_key=api_key)
+            client = OpenAI(base_url=API_BASE,api_key=api_key)
             response = client.chat.completions.create(
-                model='gpt-4',
+                model='gpt-4o-mini',
                 max_tokens=max_tokens,
                 temperature=0.0,
                 messages=[{
@@ -25,7 +29,7 @@ def get_eval(user_prompt: str, max_tokens: int, api_key: str):
                     'content': user_prompt,
                 }],
             )
-            content = response['choices'][0]['message']['content']
+            content = response.choices[0].message.content
             logger.info(content)
             return content
         except Exception as e:
@@ -46,18 +50,19 @@ def get_json_list(file_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LLM-based evaluation.')
 
-    parser.add_argument('--api_key', type=str, required=True)
+    parser.add_argument('--api_key', type=str)
     parser.add_argument('--max_tokens', type=int, default=1024, help='maximum number of tokens produced in the output')
-    parser.add_argument("--model_path", type=str, required=True)
+    parser.add_argument("--model_path", type=str, default='/data1/chh/models/meta-llama/Meta-Llama-3-8B-Instruct')
     parser.add_argument("--constraint_types", nargs='+', type=str, default=['content', 'situation', 'style', 'format', 'mixed'])
     parser.add_argument("--data_path", type=str, default="data")
-    parser.add_argument("--api_output_path", type=str, default="api_output")
+    parser.add_argument("--api_output_path", type=str, default="/home/chh/repos/moe_ctg/results/res1")
     parser.add_argument("--gpt4_discriminative_eval_input_path", type=str, default="gpt4_discriminative_eval_input")
     parser.add_argument("--data_gpt4_discriminative_eval_input_path", type=str, default="data_gpt4_discriminative_eval_input")
-    parser.add_argument("--gpt4_discriminative_eval_output_path", type=str, default="gpt4_discriminative_eval_output")
+    parser.add_argument("--gpt4_discriminative_eval_output_path", type=str, default="/home/chh/repos/moe_ctg/results/res1/eval_output")
     
     args = parser.parse_args()
-
+    args.api_key=API_KEY
+    args.model_path=os.path.basename(args.model_path)
     ### convert api_output to LLM_based_eval_input
     for constraint_type in args.constraint_types:
         acquire_discriminative_eval_input(

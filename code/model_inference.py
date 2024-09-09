@@ -6,11 +6,12 @@ python3 -m fastchat.serve.huggingface_api --model lmsys/vicuna-7b-v1.3
 python3 -m fastchat.serve.huggingface_api --model lmsys/fastchat-t5-3b-v1.0
 """
 import argparse
-import os
 import json
-import torch
+import os
 
-from fastchat.model import load_model, get_conversation_template, add_model_args
+import torch
+from fastchat.model import (add_model_args, get_conversation_template,
+                            load_model)
 from utils import convert_to_api_input
 
 
@@ -86,6 +87,7 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true")
     
     args = parser.parse_args()
+    args.model_path='/data1/chh/models/meta-llama/Meta-Llama-3-8B-Instruct'
 
     # Reset default repetition penalty for T5 models.
     if "t5" in args.model_path and args.repetition_penalty == 1.0:
